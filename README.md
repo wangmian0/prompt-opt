@@ -1,5 +1,10 @@
 # prompt-opt
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2.svg)](https://code.claude.com/docs/en/plugins)
+
+> 让 Claude Code 每条输入先自动规范化(短、口语、模糊的输入尤其受益),并按需把粗糙草稿深度打磨成正式 prompt——即装即用,`./install.sh` 一键装到 user 级。
+
 一个让 Claude Code 输入更规范的 **Claude Code 插件**,含三个模块:
 
 | 模块 | 是什么 | 何时起作用 |
