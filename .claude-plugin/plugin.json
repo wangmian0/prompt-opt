@@ -1,0 +1,7 @@
+{
+  "name": "prompt-opt",
+  "version": "1.0.0",
+  "description": "输入规范化钩子(prompt-level 三档)+ prompt 深度优化 skill + 场景模板库",
+  "author": { "name": "wangmian0" },
+  "keywords": ["prompt", "hook", "userpromptsubmit", "skill"]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "prompt-opt-mp",
+  "description": "prompt-opt:输入规范化钩子 + prompt 深度优化 skill",
+  "owner": { "name": "wangmian0" },
+  "plugins": [
+    {
+      "name": "prompt-opt",
+      "source": "./",
+      "description": "输入规范化钩子 + prompt 深度优化 skill + 场景模板库"
+    }
+  ]
+}

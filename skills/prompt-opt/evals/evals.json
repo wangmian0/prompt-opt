@@ -1,0 +1,80 @@
+{
+  "skill_name": "prompt-opt",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "debug-vague-timeout",
+      "prompt": "帮我把这个优化成正式 prompt:「那个登录接口时不时就超时,帮我看看咋回事」",
+      "expected_output": "判定为排障场景,套 debug-fix 骨架:目标/上下文/约束/验收标准 + 现象/复现/预期vs实际/已试过/环境字段;「时不时」偶发性被保留并按偶发 bug 给验收口径;缺失信息标假设;不开始实际排查。",
+      "files": [],
+      "assertions": [
+        {
+          "name": "produces-prompt-not-diagnosis",
+          "text": "产出的是一条可复制的优化后 prompt,而不是对超时问题的实际排查/诊断结论"
+        },
+        {
+          "name": "debug-skeleton-fields",
+          "text": "标准 prompt 含 目标/上下文/约束/验收标准 且含排障特有字段(现象、复现、预期 vs 实际 中至少两项)"
+        },
+        {
+          "name": "intermittency-preserved",
+          "text": "「时不时」的偶发性被保留(出现 偶发/间歇/概率复现 等表述),验收口径考虑了无法稳定复现的情况"
+        },
+        {
+          "name": "assumptions-marked",
+          "text": "缺失信息(接口位置/环境/已试过什么)以「假设:」显式标注,未虚构具体细节"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "eval_name": "feature-cli-autocomplete",
+      "prompt": "把这个需求写成规范的任务书:想给我们的 CLI 工具加个自动补全",
+      "expected_output": "判定为加功能场景,套 feature 骨架;shell 类型/补全范围等未说明处标假设,不发明具体交互;产出可复制的标准 prompt + 改动清单,不动手实现。",
+      "files": [],
+      "assertions": [
+        {
+          "name": "produces-prompt-not-implementation",
+          "text": "产出的是任务书/标准 prompt,没有开始写补全实现代码"
+        },
+        {
+          "name": "feature-skeleton-fields",
+          "text": "含 目标/上下文/约束/验收标准 且含加功能特有字段(用户可见效果、边界与不做什么 至少其一)"
+        },
+        {
+          "name": "assumptions-marked-not-invented",
+          "text": "shell 类型、补全对象(子命令/参数/路径)等未说明处以「假设:」标注,而不是径直写成事实"
+        },
+        {
+          "name": "scope-not-expanded",
+          "text": "没有发明原话未提的需求(如配置系统、多 shell 矩阵、安装器);建议性内容标注为可选"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "eval_name": "data-conversion-drop",
+      "prompt": "优化这个 prompt:查一下上季度各渠道的注册转化率是不是掉了",
+      "expected_output": "判定为数据报告场景(不是调研);「掉了」的基期多义(环比/同比)列读法标假设;转化率口径标假设;「上季度」解释标假设;不实际跑数。",
+      "files": [],
+      "assertions": [
+        {
+          "name": "produces-prompt-not-numbers",
+          "text": "产出的是优化后 prompt,没有实际跑数/编造数据结论"
+        },
+        {
+          "name": "data-report-routing",
+          "text": "按数据报告场景组织(数据源/指标定义/时间范围/输出形式类字段),而非方案调研框架"
+        },
+        {
+          "name": "baseline-ambiguity-enumerated",
+          "text": "「掉了」的比较基期多义被列出(环比/同比等至少两种读法)并标假设,未静默选一个"
+        },
+        {
+          "name": "metric-definition-assumed",
+          "text": "「注册转化率」的分子分母口径以「假设:」标注或声明以既有口径为准"
+        }
+      ]
+    }
+  ]
+}
