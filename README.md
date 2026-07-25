@@ -1,16 +1,11 @@
 # prompt-opt
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-plugin-8A2BE2.svg)](https://code.claude.com/docs/en/plugins)
-
-> 让 Claude Code 每条输入先自动规范化(短、口语、模糊的输入尤其受益),并按需把粗糙草稿深度打磨成正式 prompt——即装即用,`./install.sh` 一键装到 user 级。
-
 一个让 Claude Code 输入更规范的 **Claude Code 插件**,含三个模块:
 
 | 模块 | 是什么 | 何时起作用 |
 |------|--------|-----------|
-| **prompt-level 钩子** (`hook.sh`) | `UserPromptSubmit` 钩子,每条输入注入一条静态规范化指令(零 LLM) | 被动、每轮自动;分 lite/full/ultra 三档 |
-| **场景模板库** (`skills/prompt-opt/templates/`) | 6 个场景的 prompt 结构骨架 + 路由索引 | 被 skill 消费;也可人工查阅 |
+| **prompt-level 钩子** (`hook.sh`) | `UserPromptSubmit` 钩子,每条输入注入一条静态规范化指令(零 LLM) | 被动、每轮自动;分 auto/lite/full/ultra 四档 |
+| **场景模板库** (`skills/prompt-opt/templates/`) | 7 个场景的 prompt 结构骨架 + 路由索引 | 被 skill 消费;也可人工查阅 |
 | **prompt-opt 技能** (`skills/prompt-opt/`) | 把一条 prompt/需求草稿深度打磨成正式 prompt 的 skill | 用户明说要优化某条 prompt 时触发 |
 
 三者边界:**没有判断的控制操作走斜杠命令**(切档 `/prompt-level`);**有判断、有资源、产出交付物的显式流程走 skill**(`/prompt-opt`);**被动、每轮、零成本的引导走钩子**(三档规范化)。
@@ -64,10 +59,11 @@ prompt-opt/
 
 默认 **full**。档位持久化在 `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.prompt-level-state`,跨会话生效。
 
-钩子按档位注入不同的重述指令;豁免(会话延续/斜杠命令)之外,lite 每条都改写,full/ultra 由外层模型在运行时判定如何结构化重述、是否有歧义:
+钩子按档位注入不同的重述指令;豁免(会话延续/斜杠命令)之外,lite 每条都改写,full/ultra 由外层模型在运行时判定如何结构化重述、是否有歧义,auto 则连"用哪一档"也交给模型判:
 
 | 档位 | 定位 | 行为 |
 |------|------|------|
+| `auto` | 自动选档 | 由外层模型按本条输入的复杂度自选:简单直接做(不重述)、中等一行改写、复杂给 目标/上下文/约束/验收、重大再加确认门。拿不准往高一档走。 |
 | `lite` | 日常轻 | 每条输入在回复开头输出一行规范化改写(补指代、去口语、明确对象与动作;不展开结构化字段)。 |
 | `full` | 日常标准。默认 | 动手前先在回复开头把输入重述为 目标/上下文/约束/验收标准;信息不足标"假设",指涉环境可发现对象(报错/数据/文件)先自查再问,一次性交付。 |
 | `ultra` | 大任务/正式 | full 之上,遇实质任务(要动手的开发/排查/优化等)把「规范输出」当作待确认的正式 prompt——产出后停下等确认再开工;有歧义先列 1–3 个澄清问题。 |
@@ -76,8 +72,8 @@ prompt-opt/
 切换:直接输入下面任一命令,纯文本或斜杠形式均可(会被钩子 `block` 吞掉,不会发给 agent,只回显确认):
 
 ```
-prompt-level lite|full|ultra|off
-/prompt-level lite|full|ultra|off
+prompt-level auto|lite|full|ultra|off
+/prompt-level auto|lite|full|ultra|off
 ```
 
 不碰的输入:斜杠命令(`/` 开头)直接放行;"继续"/"好"/"修吧"这类会话延续由注入的指令要求外层模型忽略重述、直接继续。
@@ -90,12 +86,12 @@ prompt-level lite|full|ultra|off
 
 ## 模块二:场景模板库
 
-`skills/prompt-opt/templates/` 下是 6 个 Claude Code 常见场景的 prompt 结构骨架,组织法参考 [yao-open-prompts](https://github.com/yaojingang/yao-open-prompts)(场景分类、单文件单模板、CATALOG 索引),但内容定位不同:这里是**骨架**(该场景一个好 prompt 必须回答的字段),不是可直接复制的成品文案。
+`skills/prompt-opt/templates/` 下是 7 个 Claude Code 常见场景的 prompt 结构骨架,组织法参考 [yao-open-prompts](https://github.com/yaojingang/yao-open-prompts)(场景分类、单文件单模板、CATALOG 索引),但内容定位不同:这里是**骨架**(该场景一个好 prompt 必须回答的字段),不是可直接复制的成品文案。
 
 - `templates/CATALOG.md` — 场景 → 文件 → 适用信号的索引,含五对易混场景的路由裁决规则。
 - `templates/<场景>.md` — 每个含三节:适用信号(判定用)/ 字段骨架(基底四字段 目标·上下文·约束·验收标准 + 场景特有字段)/ 前后示例。
 
-场景:排障修 bug、加功能、重构、调研研究、代码审查、数据报告。通用纪律写进每个模板:意图保真第一,信息不足标「假设」不虚构,多义处把读法列出来不静默选,环境可自查对象先自查再问。
+场景:排障修 bug、加功能、重构、调研研究、代码审查、数据报告、循环任务(/goal /loop 指令,骨架对齐 [Anthropic loops 官方推荐](https://claude.com/blog/getting-started-with-loops):确定性判据、轮数/间隔上限、量化验证)。通用纪律写进每个模板:意图保真第一,信息不足标「假设」不虚构,多义处把读法列出来不静默选,环境可自查对象先自查再问。
 
 模板库无需单独安装——它随 skill(模块三)一起分发,skill 按 `${CLAUDE_SKILL_DIR}` 读取;也可以直接打开查阅。
 
@@ -115,4 +111,4 @@ prompt-level lite|full|ultra|off
 
 ---
 
-> 早期版本曾在钩子内冷启动 `claude -p haiku` 做改写后注入,实测延迟高、送达概率性,已改为当前的零 LLM 内联方案(由外层模型按注入指令自行重述)。
+> v1 的 haiku 引擎(钩子内冷启动 `claude -p haiku` 改写后注入)已退役,保留在 git 历史(commit `00e9985`)。inline vs haiku 对照实验结论见任务 `07-07-prompt-std-v2-engine`。

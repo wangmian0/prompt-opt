@@ -15,7 +15,7 @@ claude plugin install prompt-opt@prompt-opt-mp
 cat <<'EOF'
 
 已安装。用法:
-  - 档位切换:直接输入  prompt-level lite|full|ultra|off  (或 /prompt-level ...)
+  - 档位切换:直接输入  prompt-level auto|lite|full|ultra|off  (或 /prompt-level ...)
   - 深度优化:说「用 prompt-opt 打磨一下这个 prompt」或 /prompt-opt:prompt-opt
 
 注意:若你之前在 ~/.claude/settings.json 里手动加过指向 hook.sh 的 UserPromptSubmit

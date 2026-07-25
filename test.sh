@@ -50,6 +50,19 @@ OUT=$(run '{"prompt":"prompt-level off"}')
 OUT=$(run '{"prompt":"帮我看看那个报错"}')
 [[ -z "$OUT" ]] && check 0 "c8 off -> pass-through no injection" || check 1 "c8 off -> pass-through (got: $OUT)"
 
+printf '=== c9. auto level — self-selects tier per input complexity ===\n'
+OUT=$(run '{"prompt":"prompt-level auto"}')
+check "$(jqok "$OUT" '.decision == "block"')" "c9 auto switch blocked"
+[[ "$(cat "$STATE_FILE" 2>/dev/null)" == "auto" ]] && check 0 "c10 state -> auto" || check 1 "c10 state -> auto"
+OUT=$(run '{"prompt":"帮我优化一下那个函数"}')
+check "$(jqok "$OUT" '.systemMessage == "prompt-level(auto)"')" "c11 systemMessage == prompt-level(auto)"
+check "$(jqok "$OUT" '.hookSpecificOutput.additionalContext | contains("自选档")')" "c12 auto context declares self-selection"
+check "$(jqok "$OUT" '.hookSpecificOutput.additionalContext | contains("拿不准往高一档")')" "c13 auto context biases upward when unsure"
+check "$(jqok "$OUT" '.hookSpecificOutput.additionalContext | contains("不重述")')" "c14 auto context allows skipping on simple input"
+check "$(jqok "$OUT" '.hookSpecificOutput.additionalContext | contains("用户自装")')" "c16 auto context discloses hook origin (anti injection-defense)"
+OUT=$(run '{"prompt":"/prompt-level auto"}')
+check "$(jqok "$OUT" '.decision == "block"')" "c15 auto slash switch blocked"
+
 printf '=== d. malformed / empty prompt -> exit 0 no output ===\n'
 OUT=$(printf 'not json' | bash "$HOOK"); RC=$?
 [[ $RC -eq 0 && -z "$OUT" ]] && check 0 "d1 malformed stdin -> exit 0 no output" || check 1 "d1 malformed stdin (rc=$RC out=$OUT)"
