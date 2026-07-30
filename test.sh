@@ -74,6 +74,24 @@ printf 'garbage' > "$STATE_FILE"
 OUT=$(run '{"prompt":"给 fetch 加个重试"}')
 check "$(jqok "$OUT" '.systemMessage == "prompt-level(full)"')" "e1 illegal state -> full"
 
+printf '=== f. native plugin manifests ===\n'
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+check "$(jq -e '.name == "prompt-opt" and .version == "1.2.0" and .hooks == "./hooks/hooks.json"' "$ROOT/.codex-plugin/plugin.json" >/dev/null 2>&1 && printf true || printf false)" "f1 Codex manifest"
+check "$(jq -e '.name == "prompt-opt-mp" and .plugins[0].name == "prompt-opt" and .plugins[0].source == {source:"local", path:"."}' "$ROOT/.agents/plugins/marketplace.json" >/dev/null 2>&1 && printf true || printf false)" "f2 Codex marketplace"
+
+printf '=== g. Codex state path ===\n'
+CODEX_TEST_HOME="$STATE_DIR/codex"
+mkdir -p "$CODEX_TEST_HOME"
+OUT=$(printf '%s' '{"prompt":"prompt-level auto"}' | env -u PROMPT_LEVEL_STATE_FILE CODEX_THREAD_ID=test CODEX_HOME="$CODEX_TEST_HOME" bash "$HOOK")
+check "$(jqok "$OUT" '.decision == "block"')" "g1 Codex switch blocked"
+[[ "$(cat "$CODEX_TEST_HOME/.prompt-level-state" 2>/dev/null)" == "auto" ]] && check 0 "g2 Codex state path" || check 1 "g2 Codex state path"
+
+PLUGIN_TEST_DATA="$STATE_DIR/plugin-data"
+mkdir -p "$PLUGIN_TEST_DATA"
+OUT=$(printf '%s' '{"prompt":"prompt-level lite"}' | env -u PROMPT_LEVEL_STATE_FILE PLUGIN_DATA="$PLUGIN_TEST_DATA" CODEX_THREAD_ID=test bash "$HOOK")
+check "$(jqok "$OUT" '.decision == "block"')" "g3 plugin-data switch blocked"
+[[ "$(cat "$PLUGIN_TEST_DATA/.prompt-level-state" 2>/dev/null)" == "lite" ]] && check 0 "g4 PLUGIN_DATA state path" || check 1 "g4 PLUGIN_DATA state path"
+
 printf '\n'
 if [[ $FAILED -eq 0 ]]; then printf 'ALL PASS\n'; else printf 'SOME FAILED\n'; fi
 exit $FAILED

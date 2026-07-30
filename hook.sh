@@ -10,9 +10,16 @@ set -u
 
 command -v jq >/dev/null 2>&1 || exit 0
 
-# State lives with the ponytail convention (CLAUDE_CONFIG_DIR). PROMPT_LEVEL_STATE_FILE
-# overrides it so tests can isolate state.
-STATE_FILE="${PROMPT_LEVEL_STATE_FILE:-${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.prompt-level-state}"
+# Tests can override the state file. Codex and Claude otherwise keep independent modes.
+if [[ -n "${PROMPT_LEVEL_STATE_FILE:-}" ]]; then
+  STATE_FILE="$PROMPT_LEVEL_STATE_FILE"
+elif [[ -n "${PLUGIN_DATA:-}" ]]; then
+  STATE_FILE="$PLUGIN_DATA/.prompt-level-state"
+elif [[ -n "${CODEX_THREAD_ID:-}${CODEX_CI:-}" ]]; then
+  STATE_FILE="${CODEX_HOME:-$HOME/.codex}/.prompt-level-state"
+else
+  STATE_FILE="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.prompt-level-state"
+fi
 
 input=$(cat)
 prompt=$(printf '%s' "$input" | jq -r '.prompt // empty' 2>/dev/null) || exit 0

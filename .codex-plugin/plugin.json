@@ -1,0 +1,26 @@
+{
+  "name": "prompt-opt",
+  "version": "1.2.0",
+  "description": "输入规范化钩子、prompt 深度优化 skill 与场景模板库",
+  "author": {
+    "name": "wangmian0",
+    "url": "https://github.com/wangmian0"
+  },
+  "homepage": "https://github.com/wangmian0/prompt-opt",
+  "repository": "https://github.com/wangmian0/prompt-opt",
+  "license": "MIT",
+  "keywords": ["prompt", "hook", "userpromptsubmit", "skill"],
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "Prompt Opt",
+    "shortDescription": "规范输入并深度优化 prompt",
+    "longDescription": "按复杂度规范化每轮输入，并把粗糙需求打磨成可执行的正式 prompt。",
+    "developerName": "wangmian0",
+    "category": "Productivity",
+    "capabilities": ["Instructions", "Lifecycle hooks"],
+    "websiteURL": "https://github.com/wangmian0/prompt-opt",
+    "defaultPrompt": ["用 prompt-opt 打磨一下这个需求。", "把这段需求改成正式任务书。"],
+    "brandColor": "#2563EB"
+  }
+}
