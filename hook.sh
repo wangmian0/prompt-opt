@@ -8,6 +8,13 @@
 # exits 0 with no output so the original prompt proceeds unchanged.
 set -u
 
+# jq 兜底：非交互 shell 不读 .bash_profile，Windows 上 winget 的 Links 目录
+# 未必在继承的 PATH 里（本机 2026-10-30 实测），先补路径再判定。
+if ! command -v jq >/dev/null 2>&1; then
+  for _d in "${LOCALAPPDATA:-$HOME/AppData/Local}/Microsoft/WinGet/Links" "$HOME/.local/bin" /usr/bin; do
+    if [[ -x "$_d/jq.exe" || -x "$_d/jq" ]]; then PATH="$_d:$PATH"; break; fi
+  done
+fi
 command -v jq >/dev/null 2>&1 || exit 0
 
 # Tests can override the state file. Codex and Claude otherwise keep independent modes.
